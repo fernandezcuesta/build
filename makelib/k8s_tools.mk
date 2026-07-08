@@ -16,7 +16,7 @@
 # Options
 
 # the version of istio to use
-ISTIO_VERSION ?= 1.12.9
+ISTIO_VERSION ?= 1.30.2
 ISTIO := $(TOOLS_HOST_DIR)/istioctl-$(ISTIO_VERSION)
 ISTIOOS := $(HOSTOS)
 ISTIO_DOWNLOAD_TUPLE := $(SAFEHOSTPLATFORM)
@@ -25,29 +25,34 @@ ISTIO_DOWNLOAD_TUPLE := osx-$(SAFEHOSTARCH)
 endif
 
 # the version of kcl to use
-KCL_VERSION ?= v0.10.0
+KCL_VERSION ?= v0.11.2
 KCL := $(TOOLS_HOST_DIR)/kcl-$(KCL_VERSION)
 
 # the version of kind to use
-KIND_VERSION ?= v0.30.0
+KIND_VERSION ?= v0.32.0
 KIND := $(TOOLS_HOST_DIR)/kind-$(KIND_VERSION)
 
 # the version of kubectl to use
-KUBECTL_VERSION ?= v1.33.5
+KUBECTL_VERSION ?= v1.35.6
 KUBECTL := $(TOOLS_HOST_DIR)/kubectl-$(KUBECTL_VERSION)
 
 # the version of kustomize to use
-KUSTOMIZE_VERSION ?= v5.7.1
+KUSTOMIZE_VERSION ?= v5.8.1
 KUSTOMIZE := $(TOOLS_HOST_DIR)/kustomize-$(KUSTOMIZE_VERSION)
 
+# the version of crossplane bin to use
+CROSSPLANE_BIN_VERSION ?= v2.3.3
+CROSSPLANE_BIN_CHANNEL ?= stable
+CROSSPLANE_BIN := $(TOOLS_HOST_DIR)/crossplane-bin-$(CROSSPLANE_BIN_VERSION)
+
 # the version of crossplane cli to use
-CROSSPLANE_CLI_VERSION ?= v2.0.2
+CROSSPLANE_CLI_VERSION ?= v2.4.0
 CROSSPLANE_CLI_CHANNEL ?= stable
 CROSSPLANE_CLI := $(TOOLS_HOST_DIR)/crossplane-cli-$(CROSSPLANE_CLI_VERSION)
 
 # the version of helm 3 to use
 USE_HELM ?= false
-HELM_VERSION ?= v3.18.6
+HELM_VERSION ?= v3.21.2
 HELM := $(TOOLS_HOST_DIR)/helm-$(HELM_VERSION)
 
 # If we enable HELM we alias HELM to be HELM
@@ -60,11 +65,11 @@ HELM := $(TOOLS_HOST_DIR)/helm-$(HELM_VERSION)
 endif
 
 # the version of kuttl to use
-KUTTL_VERSION ?= 0.12.1
+KUTTL_VERSION ?= 0.26.0
 KUTTL := $(TOOLS_HOST_DIR)/kuttl-$(KUTTL_VERSION)
 
 # the version of chainsaw to use
-CHAINSAW_VERSION ?= 0.2.13
+CHAINSAW_VERSION ?= 0.2.15
 CHAINSAW := $(TOOLS_HOST_DIR)/chainsaw-$(CHAINSAW_VERSION)
 
 # the version of uptest to use
@@ -72,7 +77,7 @@ UPTEST_VERSION ?= v2.2.0
 UPTEST := $(TOOLS_HOST_DIR)/uptest-$(UPTEST_VERSION)
 
 # the version of yq to use
-YQ_VERSION ?= v4.40.5
+YQ_VERSION ?= v4.53.3
 YQ := $(TOOLS_HOST_DIR)/yq-$(YQ_VERSION)
 
 # ====================================================================================
@@ -139,11 +144,17 @@ $(KUSTOMIZE):
 	@rm -fr $(TOOLS_HOST_DIR)/tmp-kustomize
 	@$(OK) installing kustomize $(KUSTOMIZE_VERSION)
 
+# Crossplane BIN download and install
+$(CROSSPLANE_BIN):
+	@$(INFO) installing Crossplane BIN $(CROSSPLANE_BIN_VERSION)
+	@curl -fsSLo $(CROSSPLANE_BIN) --create-dirs https://releases.crossplane.io/$(CROSSPLANE_BIN_CHANNEL)/$(CROSSPLANE_BIN_VERSION)/bin/$(SAFEHOST_PLATFORM)/crossplane?source=build || $(FAIL)
+	@chmod +x $(CROSSPLANE_BIN)
+	@$(OK) installing Crossplane BIN $(CROSSPLANE_BIN_VERSION)
+
 # Crossplane CLI download and install
 $(CROSSPLANE_CLI):
 	@$(INFO) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
-	@curl -fsSLo $(CROSSPLANE_CLI) --create-dirs https://releases.crossplane.io/$(CROSSPLANE_CLI_CHANNEL)/$(CROSSPLANE_CLI_VERSION)/bin/$(SAFEHOST_PLATFORM)/crank?source=build || $(FAIL)
-	@chmod +x $(CROSSPLANE_CLI)
+	@curl -fsSLo $(CROSSPLANE_CLI) --create-dirs https://cli.crossplane.io/$(CROSSPLANE_CLI_CHANNEL)/$(CROSSPLANE_CLI_VERSION)/bin/$(SAFEHOST_PLATFORM)/crossplane?source=build || $(FAIL)
 	@$(OK) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
 
 # helm download and install

@@ -128,7 +128,7 @@ render: $(CROSSPLANE_CLI) ${YQ}
 			ENVIRONMENT=$${ENVIRONMENT=="null" ? "" : $$ENVIRONMENT}; \
 			OBSERVE=$${OBSERVE=="null" ? "" : $$OBSERVE}; \
 			$(INFO) rendering $$file; \
-			$(CROSSPLANE_CLI) render $$file $$COMPOSITION $$FUNCTION $${ENVIRONMENT:+-e $$ENVIRONMENT} $${OBSERVE:+-o $$OBSERVE} -x >> "$(CACHE_DIR)/render/$${OUT_FILE}.yaml"; \
+			$(CROSSPLANE_CLI) composition render $$file $$COMPOSITION $$FUNCTION $${ENVIRONMENT:+-e $$ENVIRONMENT} $${OBSERVE:+-o $$OBSERVE} -x >> "$(CACHE_DIR)/render/$${OUT_FILE}.yaml"; \
 			if [ $$? != 0 ]; then \
 				$(ERR) fail rendering $$file; \
 				exit 1; \
@@ -184,7 +184,7 @@ render.validate:
 			$(WARN) render produced empty output for: $$file; \
 			continue; \
 		fi; \
-		echo "$${RENDERED}" | $(CROSSPLANE_CLI) beta validate $(UPTEST_VALIDATE_EXTENSIONS) - ; \
+		echo "$${RENDERED}" | $(CROSSPLANE_CLI) resource validate $(UPTEST_VALIDATE_EXTENSIONS) - ; \
 		if [ $$? -ne 0 ]; then \
 			$(ERR) fail validating $$file; \
 			exit 1; \

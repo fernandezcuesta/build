@@ -154,7 +154,8 @@ $(CROSSPLANE_BIN):
 # Crossplane CLI download and install
 $(CROSSPLANE_CLI):
 	@$(INFO) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
-	@curl -fsSLo $(CROSSPLANE_CLI) --create-dirs https://cli.crossplane.io/$(CROSSPLANE_CLI_CHANNEL)/$(CROSSPLANE_CLI_VERSION)/bin/$(SAFEHOST_PLATFORM)/crossplane?source=build || $(FAIL)
+	@curl -sfL "https://cli.crossplane.io/install.sh" | XP_VERSION=$(CROSSPLANE_CLI_VERSION) sh
+	@mv crossplane $(CROSSPLANE_CLI)
 	@chmod +x $(CROSSPLANE_CLI)
 	@$(OK) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
 

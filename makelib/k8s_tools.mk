@@ -142,8 +142,9 @@ $(KUSTOMIZE):
 # Crossplane CLI download and install
 $(CROSSPLANE_CLI):
 	@$(INFO) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
-	@curl -fsSLo $(CROSSPLANE_CLI) --create-dirs https://releases.crossplane.io/$(CROSSPLANE_CLI_CHANNEL)/$(CROSSPLANE_CLI_VERSION)/bin/$(SAFEHOST_PLATFORM)/crank?source=build || $(FAIL)
-	@chmod +x $(CROSSPLANE_CLI)
+	@mkdir -p $(TOOLS_HOST_DIR) || $(FAIL)
+	@curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/main/install.sh | XP_CHANNEL=$(CROSSPLANE_CLI_CHANNEL) XP_VERSION=$(CROSSPLANE_CLI_VERSION) sh || $(FAIL)
+	@mv crossplane $(CROSSPLANE_CLI) || $(FAIL)
 	@$(OK) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
 
 # helm download and install

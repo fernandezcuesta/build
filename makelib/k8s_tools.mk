@@ -16,7 +16,7 @@
 # Options
 
 # the version of istio to use
-ISTIO_VERSION ?= 1.30.2
+ISTIO_VERSION ?= 1.30.4
 ISTIO := $(TOOLS_HOST_DIR)/istioctl-$(ISTIO_VERSION)
 ISTIOOS := $(HOSTOS)
 ISTIO_DOWNLOAD_TUPLE := $(SAFEHOSTPLATFORM)
@@ -29,11 +29,11 @@ KCL_VERSION ?= v0.11.2
 KCL := $(TOOLS_HOST_DIR)/kcl-$(KCL_VERSION)
 
 # the version of kind to use
-KIND_VERSION ?= v0.32.0
+KIND_VERSION ?= v0.33.0
 KIND := $(TOOLS_HOST_DIR)/kind-$(KIND_VERSION)
 
 # the version of kubectl to use
-KUBECTL_VERSION ?= v1.35.6
+KUBECTL_VERSION ?= v1.36.4
 KUBECTL := $(TOOLS_HOST_DIR)/kubectl-$(KUBECTL_VERSION)
 
 # the version of kustomize to use
@@ -41,18 +41,18 @@ KUSTOMIZE_VERSION ?= v5.8.1
 KUSTOMIZE := $(TOOLS_HOST_DIR)/kustomize-$(KUSTOMIZE_VERSION)
 
 # the version of crossplane bin to use
-CROSSPLANE_BIN_VERSION ?= v2.3.3
+CROSSPLANE_BIN_VERSION ?= v2.4.0
 CROSSPLANE_BIN_CHANNEL ?= stable
 CROSSPLANE_BIN := $(TOOLS_HOST_DIR)/crossplane-bin-$(CROSSPLANE_BIN_VERSION)
 
 # the version of crossplane cli to use
-CROSSPLANE_CLI_VERSION ?= v2.4.0
+CROSSPLANE_CLI_VERSION ?= v2.5.0
 CROSSPLANE_CLI_CHANNEL ?= stable
 CROSSPLANE_CLI := $(TOOLS_HOST_DIR)/crossplane-cli-$(CROSSPLANE_CLI_VERSION)
 
 # the version of helm 3 to use
 USE_HELM ?= false
-HELM_VERSION ?= v3.21.2
+HELM_VERSION ?= v3.21.4
 HELM := $(TOOLS_HOST_DIR)/helm-$(HELM_VERSION)
 
 # If we enable HELM we alias HELM to be HELM
@@ -77,7 +77,7 @@ UPTEST_VERSION ?= v2.2.0
 UPTEST := $(TOOLS_HOST_DIR)/uptest-$(UPTEST_VERSION)
 
 # the version of yq to use
-YQ_VERSION ?= v4.53.3
+YQ_VERSION ?= v4.53.6
 YQ := $(TOOLS_HOST_DIR)/yq-$(YQ_VERSION)
 
 # ====================================================================================
@@ -147,6 +147,7 @@ $(KUSTOMIZE):
 # Crossplane BIN download and install
 $(CROSSPLANE_BIN):
 	@$(INFO) installing Crossplane BIN $(CROSSPLANE_BIN_VERSION)
+	@mkdir -p $(TOOLS_HOST_DIR) || $(FAIL)
 	@curl -fsSLo $(CROSSPLANE_BIN) --create-dirs https://releases.crossplane.io/$(CROSSPLANE_BIN_CHANNEL)/$(CROSSPLANE_BIN_VERSION)/bin/$(SAFEHOST_PLATFORM)/crossplane?source=build || $(FAIL)
 	@chmod +x $(CROSSPLANE_BIN)
 	@$(OK) installing Crossplane BIN $(CROSSPLANE_BIN_VERSION)
@@ -154,8 +155,9 @@ $(CROSSPLANE_BIN):
 # Crossplane CLI download and install
 $(CROSSPLANE_CLI):
 	@$(INFO) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
-	@curl -sfL "https://cli.crossplane.io/install.sh" | XP_VERSION=$(CROSSPLANE_CLI_VERSION) sh
-	@mv crossplane $(CROSSPLANE_CLI)
+	@mkdir -p $(TOOLS_HOST_DIR) || $(FAIL)
+	@curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/main/install.sh | XP_CHANNEL=$(CROSSPLANE_CLI_CHANNEL) XP_VERSION=$(CROSSPLANE_CLI_VERSION) sh || $(FAIL)
+	@mv crossplane $(CROSSPLANE_CLI) || $(FAIL)
 	@chmod +x $(CROSSPLANE_CLI)
 	@$(OK) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
 

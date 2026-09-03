@@ -39,6 +39,10 @@ ifeq ($(UPTEST_SKIP_DELETE),true)
     UPTEST_ARGS += --skip-delete
 endif
 
+ifeq ($(CROSSPLANE_CLI_SPLIT),true)
+    UPTEST_ARGS += --use-library-mode
+endif
+
 UPTEST_DEFAULT_TIMEOUT ?=
 ifdef UPTEST_DEFAULT_TIMEOUT
 	UPTEST_ARGS += --default-timeout=$(UPTEST_DEFAULT_TIMEOUT)
@@ -92,26 +96,21 @@ e2e: build controlplane.down controlplane.up $(UPTEST_LOCAL_DEPLOY_TARGET) uptes
 #
 #  Example: `make render UPTEST_RENDER_FILES="path/to/example.yaml,another-example.yaml`
 # The render and validate subcommands moved across Crossplane CLI versions:
-#   < v1.17.0             : `beta render`        `beta validate`
-#   >= v1.17.0, <= v2.3.0 : `render`             `beta validate`
-#   > v2.3.0              : `composition render` `resource validate`
-CROSSPLANE_RENDER_MIN_VERSION := v2.3.0
-CROSSPLANE_RENDER_PROMOTED_VERSION := v1.17.0
-ifeq ($(shell printf '%s\n%s\n' "$(CROSSPLANE_CLI_VERSION)" "$(CROSSPLANE_RENDER_MIN_VERSION)" | sort -V | tail -n1),$(CROSSPLANE_RENDER_MIN_VERSION))
-	CROSSPLANE_VALIDATE_CMD := $(CROSSPLANE_CLI) beta validate
-	ifeq ($(shell printf '%s\n%s\n' "$(CROSSPLANE_CLI_VERSION)" "$(CROSSPLANE_RENDER_PROMOTED_VERSION)" | sort -V | tail -n1),$(CROSSPLANE_CLI_VERSION))
-		CROSSPLANE_RENDER_CMD := $(CROSSPLANE_CLI) render
-	else
-		CROSSPLANE_RENDER_CMD := $(CROSSPLANE_CLI) beta render
-	endif
+#   < v2.3.0  : `render`             `beta validate`
+#   >= v2.3.0 : `composition render` `resource validate`
+ifeq ($(CROSSPLANE_CLI_SPLIT),true)
+CROSSPLANE_RENDER_CMD = $(CROSSPLANE_CLI) composition render --crossplane-binary $(CROSSPLANE_BIN)
+CROSSPLANE_VALIDATE_CMD = $(CROSSPLANE_CLI) resource validate
+CROSSPLANE_RENDER_DEPS = $(CROSSPLANE_BIN)
 else
-	CROSSPLANE_RENDER_CMD := $(CROSSPLANE_CLI) composition render
-	CROSSPLANE_VALIDATE_CMD := $(CROSSPLANE_CLI) resource validate
+CROSSPLANE_RENDER_CMD = $(CROSSPLANE_CLI) render
+CROSSPLANE_VALIDATE_CMD = $(CROSSPLANE_CLI) beta validate
+CROSSPLANE_RENDER_DEPS =
 endif
 
 UPTEST_RENDER_FILES ?=
 UPTEST_EXAMPLES_FOLDER ?= ./examples
-render: $(CROSSPLANE_CLI) ${YQ}
+render: $(CROSSPLANE_CLI) $(CROSSPLANE_RENDER_DEPS) ${YQ}
 	@indir="$(UPTEST_EXAMPLES_FOLDER)"; \
 	rm -rf "$(CACHE_DIR)/render"; \
 	mkdir -p "$(CACHE_DIR)/render" || true; \

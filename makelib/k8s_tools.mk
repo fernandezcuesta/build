@@ -46,9 +46,19 @@ CROSSPLANE_BIN_CHANNEL ?= stable
 CROSSPLANE_BIN := $(TOOLS_HOST_DIR)/crossplane-bin-$(CROSSPLANE_BIN_VERSION)
 
 # the version of crossplane cli to use
+# crossplane/cli (>= v2.3.0) ships on cli.crossplane.io and moved
+# render/validate out of the beta group.
 CROSSPLANE_CLI_VERSION ?= v2.5.0
 CROSSPLANE_CLI_CHANNEL ?= stable
 CROSSPLANE_CLI := $(TOOLS_HOST_DIR)/crossplane-cli-$(CROSSPLANE_CLI_VERSION)
+CROSSPLANE_CLI_SPLIT_VERSION := v2.3.0
+ifeq ($(shell printf '%s\n%s\n' "$(CROSSPLANE_CLI_VERSION)" "$(CROSSPLANE_CLI_SPLIT_VERSION)" | sort -V | head -n1),$(CROSSPLANE_CLI_SPLIT_VERSION))
+CROSSPLANE_CLI_SPLIT := true
+CROSSPLANE_CLI_URL := https://cli.crossplane.io/$(CROSSPLANE_CLI_CHANNEL)/$(CROSSPLANE_CLI_VERSION)/bin/$(SAFEHOST_PLATFORM)/crossplane?source=build
+else
+CROSSPLANE_CLI_SPLIT := false
+CROSSPLANE_CLI_URL := https://releases.crossplane.io/$(CROSSPLANE_CLI_CHANNEL)/$(CROSSPLANE_CLI_VERSION)/bin/$(SAFEHOST_PLATFORM)/crank?source=build
+endif
 
 # the version of helm 3 to use
 USE_HELM ?= false
@@ -155,9 +165,7 @@ $(CROSSPLANE_BIN):
 # Crossplane CLI download and install
 $(CROSSPLANE_CLI):
 	@$(INFO) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
-	@mkdir -p $(TOOLS_HOST_DIR) || $(FAIL)
-	@curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/main/install.sh | XP_CHANNEL=$(CROSSPLANE_CLI_CHANNEL) XP_VERSION=$(CROSSPLANE_CLI_VERSION) sh || $(FAIL)
-	@mv crossplane $(CROSSPLANE_CLI) || $(FAIL)
+	@curl -fsSLo $(CROSSPLANE_CLI) --create-dirs $(CROSSPLANE_CLI_URL) || $(FAIL)
 	@chmod +x $(CROSSPLANE_CLI)
 	@$(OK) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
 

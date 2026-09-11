@@ -22,6 +22,10 @@ ifndef UPTEST_LOCAL_DEPLOY_TARGET
 		`local.xpkg.deploy.provider.$(PROJECT_NAME)` for providers)
 endif
 
+ifndef CROSSPLANE_CLI_SPLIT
+  $(error CROSSPLANE_CLI_SPLIT is not set, ensure to include build/makelib/k8s_tools.mk first)
+endif
+
 UPTEST_ARGS ?=
 
 UPTEST_SKIP_UPDATE ?= false
